@@ -34,15 +34,14 @@ contract TCRTokenFactory is Ownable {
         return token;
    }
 
-    function deployPainBNB(
+   function _deploy(
     string memory name,
     string memory symbol,
     uint8 decimals,
     uint256 supply,
     uint tokenType
-   ) external payable returns(address){
-        require(msg.value == deployPriceBNB);
-        if(tokenType==1)
+    ) private returns(address) {
+    if(tokenType==1)
             return address(
                 new ERC20Standard(name,symbol,decimals,supply,_msgSender()));
         if(tokenType==2)
@@ -52,6 +51,18 @@ contract TCRTokenFactory is Ownable {
             return address(
                 new ERC20Mintable(name,symbol,decimals,supply,_msgSender()));
         return address(0);
+   }
+
+    function deployPainBNB(
+    string memory name,
+    string memory symbol,
+    uint8 decimals,
+    uint256 supply,
+    uint tokenType
+   ) external payable returns(address){
+        require(msg.value == deployPriceBNB);
+
+        return _deploy(name, symbol, decimals, supply, tokenType);
    }
 
    function deployPainTCR(
@@ -65,16 +76,7 @@ contract TCRTokenFactory is Ownable {
         require(tcr.allowance(_msgSender(), address(this)) >= deployPriceTCR);
         require(tcr.transferFrom(_msgSender(), address(this), deployPriceTCR));
 
-        if(tokenType==1)
-            return address(
-                new ERC20Standard(name,symbol,decimals,supply,_msgSender()));
-        if(tokenType==2)
-            return address(
-                new ERC20Burnable(name,symbol,decimals,supply,_msgSender()));
-        if(tokenType==3)
-            return address(
-                new ERC20Mintable(name,symbol,decimals,supply,_msgSender()));
-        return address(0);
+        return _deploy(name, symbol, decimals, supply, tokenType);
    }
 
    function getDeployPriceTCR() external view returns(uint256){
